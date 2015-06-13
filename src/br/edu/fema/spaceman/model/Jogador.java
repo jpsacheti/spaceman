@@ -13,7 +13,12 @@ import br.edu.fema.spaceman.configuracao.Assets;
 import br.edu.fema.spaceman.delegate.MotorProjetilDelegate;
 //Nave que o jogador controla
 public class Jogador extends CCSprite{
+<<<<<<< HEAD
 	float posX = (Aparelho.screenWidth()+20)/2;
+=======
+	//Posição X e Y do jogador
+	float posX = Aparelho.screenWidth()/2;
+>>>>>>> origin/master
 	float posY = 50;
 	MotorProjetilDelegate delegate;
 	
