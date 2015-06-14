@@ -20,30 +20,30 @@ public class MainActivity extends ActionBarActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		//parametros de configuração da tela
-		
+		// parametros de configuração da tela. Inertes do Android.
+
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		super.onCreate(savedInstanceState);
-		
+
 		// configura a tela - instancia um novo renderizador openGL do cocos2D
 		CCGLSurfaceView glSurfaceView = new CCGLSurfaceView(this);
 		glSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
-		
+
 		setContentView(glSurfaceView);
 		CCDirector.sharedDirector().attachInView(glSurfaceView);
-		configSensormanager();
+		configSensorManager();
 		CCDirector.sharedDirector().setScreenSize(320, 480);
-		
-		// abre tela principal
 
+		// abre tela principal
 		CCScene scene = new TelaInicial().scene();
 		CCDirector.sharedDirector().runWithScene(scene);
 	}
-
-	private void configSensormanager() {
+	
+	//Adquire o objeto SensorManager da API do Android
+	private void configSensorManager() {
 		SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		Aparelho.setSensorManager(sensorManager);
 	}
@@ -66,4 +66,6 @@ public class MainActivity extends ActionBarActivity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
+
+
 }

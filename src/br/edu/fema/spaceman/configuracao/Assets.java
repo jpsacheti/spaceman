@@ -14,4 +14,8 @@ public class Assets {
 	public final static String RIGHT = "right.png";
 	public final static String SHOOT = "shoot.png"; // Botão atirar
 	public final static String PROJECTILE = "projectile.png"; // Projétil - Disparo da nave
+	public final static String GAMEOVER = "gameover.png"; // Imagem de fim de jogo
+	public final static String PAUSE = "pause.png";
+	public final static String EXIT = "exit.png";
+	public final static String BTNPAUSE = "btnPause.png";
 }

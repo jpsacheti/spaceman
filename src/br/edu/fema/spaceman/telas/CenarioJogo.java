@@ -7,27 +7,34 @@ import static br.edu.fema.spaceman.configuracao.Aparelho.screenWidth;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.cocos2d.layers.CCLayer;
 import org.cocos2d.layers.CCScene;
+import org.cocos2d.nodes.CCDirector;
 import org.cocos2d.nodes.CCSprite;
+import org.cocos2d.sound.SoundEngine;
 import org.cocos2d.types.CGPoint;
 import org.cocos2d.types.CGRect;
 
+import br.edu.fema.spaceman.R;
 import br.edu.fema.spaceman.Util;
 import br.edu.fema.spaceman.configuracao.Assets;
+import br.edu.fema.spaceman.configuracao.Controlador;
 import br.edu.fema.spaceman.control.Controle;
 import br.edu.fema.spaceman.delegate.MotorMeteorosDelegate;
 import br.edu.fema.spaceman.delegate.MotorProjetilDelegate;
+import br.edu.fema.spaceman.delegate.PauseDelegate;
 import br.edu.fema.spaceman.model.Jogador;
 import br.edu.fema.spaceman.model.Meteoro;
+import br.edu.fema.spaceman.model.Placar;
 import br.edu.fema.spaceman.model.Projetil;
 import br.edu.fema.spaceman.motor.MotorMeteoros;
 
 //Essa classe orquestra todo o funcionamento do jogo e chama as lógicas encapsuladas por outras classes
 public class CenarioJogo extends CCLayer implements MotorMeteorosDelegate,
-		MotorProjetilDelegate {
+		MotorProjetilDelegate, PauseDelegate {
 
 	private Fundo fundo;
 
@@ -45,6 +52,14 @@ public class CenarioJogo extends CCLayer implements MotorMeteorosDelegate,
 	private CCLayer camadaProjeteis;
 	private List<Projetil> arrayProjeteis;
 
+	// Placar
+	private CCLayer camadaPlacar;
+	private Placar placar;
+
+	// Tela de Pause
+	private Pause pauseScreen;
+	private CCLayer layerTop;
+
 	private CenarioJogo() {
 		this.fundo = new Fundo(Assets.BACKGROUND);
 		this.fundo.setPosition(screenResolution(CGPoint.ccp(
@@ -60,12 +75,23 @@ public class CenarioJogo extends CCLayer implements MotorMeteorosDelegate,
 		this.camadaMeteoros = CCLayer.node();
 		this.camadaJogador = CCLayer.node();
 		this.camadaProjeteis = CCLayer.node();
+		this.camadaPlacar = CCLayer.node();
 		this.addChild(this.camadaMeteoros);
 
 		addChild(camadaJogador);
 		addChild(camadaProjeteis);
+		addChild(camadaPlacar);
+
+		this.layerTop = CCLayer.node();
+		this.addChild(this.layerTop);
+
 		this.construirTela();
 
+		preloadCache();
+		// começa a musica no jogo, o parâmetro true serve para indicar que a
+		// música deve repetir indefinidamente.
+		SoundEngine.sharedEngine().playSound(
+				CCDirector.sharedDirector().getActivity(), R.raw.musica, true);
 		this.setIsTouchEnabled(true);
 
 	}
@@ -77,6 +103,18 @@ public class CenarioJogo extends CCLayer implements MotorMeteorosDelegate,
 		return cena;
 	}
 
+	// Cria o cache de musicas para evitar carregamentos desnecessários
+	private void preloadCache() {
+		SoundEngine.sharedEngine().preloadEffect(
+				CCDirector.sharedDirector().getActivity(), R.raw.laser);
+		SoundEngine.sharedEngine().preloadEffect(
+				CCDirector.sharedDirector().getActivity(), R.raw.bang);
+		SoundEngine.sharedEngine().preloadEffect(
+				CCDirector.sharedDirector().getActivity(), R.raw.over);
+
+	}
+
+	// Auto-explicativo. Carrega e instancia todos os objetos dessa classe
 	private void construirTela() {
 		arrayMeteoros = new ArrayList<Meteoro>();
 		motorMeteoros = new MotorMeteoros();
@@ -84,6 +122,8 @@ public class CenarioJogo extends CCLayer implements MotorMeteorosDelegate,
 		arrayProjeteis = new ArrayList<Projetil>();
 		jogador = new Jogador();
 		jogador.setDelegate(this);
+		placar = new Placar();
+		camadaPlacar.addChild(placar);
 		camadaJogador.addChild(jogador);
 		arrayJogador.add(jogador);
 	}
@@ -106,11 +146,13 @@ public class CenarioJogo extends CCLayer implements MotorMeteorosDelegate,
 		ignicao();
 	}
 
+	// Ativa a rolagem dos meteoros
 	private void ignicao() {
 		addChild(motorMeteoros);
 		motorMeteoros.setDelegate(this);
 	}
 
+	// Método que avalia a colisão dos objetos na tela
 	private boolean verificarColisaoBlocos(List<? extends CCSprite> array1,
 			List<? extends CCSprite> array2, CenarioJogo cenario, String hit) {
 		boolean result = false;
@@ -123,7 +165,7 @@ public class CenarioJogo extends CCLayer implements MotorMeteorosDelegate,
 				if (CGRect.intersects(rect1, rect2)) {
 					System.out.println("Aviso - Colisão: " + hit);
 					result = true;
-					//Invoca o método apropriado para lidar com a colisão
+					// Invoca o método apropriado para lidar com a colisão
 					Method method;
 					try {
 						method = CenarioJogo.class.getMethod(hit,
@@ -146,6 +188,8 @@ public class CenarioJogo extends CCLayer implements MotorMeteorosDelegate,
 		return result;
 	}
 
+	// Método que roda a cada instante no jogo, avaliando colisão
+	// projetil-meteoro e meteoro-jogador
 	public void verificarColisao(float dt) {
 		this.verificarColisaoBlocos(arrayMeteoros, arrayProjeteis, this,
 				"meteoroHit");
@@ -155,27 +199,33 @@ public class CenarioJogo extends CCLayer implements MotorMeteorosDelegate,
 
 	@SuppressWarnings("unused")
 	private void removerElementos(float dt) {
-		// Desaloca elementos para evitar vazamento de memória
+		// Desaloca elementos para evitar vazamento de memória. O objeto é
+		// dereferenciado tanto no array quanto na Layer.
+
+		// Percorre o array de meteoros. Caso encontre um que tenha atingido o
+		// fim da tela, ele é removido.
 		if (!arrayMeteoros.isEmpty()) {
-			List<Meteoro> remover = new ArrayList<Meteoro>();
-			for (Meteoro meteoro : arrayMeteoros) {
-				if (meteoro.getY() <= 0) {
-					remover.add(meteoro);
-					meteoro.removerEParar();
+			Iterator<Meteoro> iterator = arrayMeteoros.iterator();
+			while (iterator.hasNext()) {
+				Meteoro c = iterator.next();
+				if (c.getY() <= 0) {
+					iterator.remove();
+					c.removerEParar();
 				}
 			}
-			arrayMeteoros.removeAll(remover);
 		}
+
+		// Percorre o array de tiros. Caso encontre um que tenha atingido o fim
+		// da tela, ele é removido.
 		if (!arrayProjeteis.isEmpty()) {
-			List<Projetil> remover = new ArrayList<Projetil>();
-			for (Projetil projetil : arrayProjeteis) {
-				if (projetil.getY() >= screenHeight()) {
-					// para a atualização e remove e o elemento da tela
-					remover.add(projetil);
-					projetil.removerEParar();
+			Iterator<Projetil> iterator = arrayProjeteis.iterator();
+			while (iterator.hasNext()) {
+				Projetil c = iterator.next();
+				if (c.getY() >= screenHeight()) {
+					iterator.remove();
+					c.removerEParar();
 				}
 			}
-			arrayProjeteis.removeAll(remover);
 		}
 	}
 
@@ -200,14 +250,17 @@ public class CenarioJogo extends CCLayer implements MotorMeteorosDelegate,
 	public void moverEsquerda() {
 		jogador.moverEsquerda();
 	}
-	
-	public void meteoroHit(CCSprite meteoro, CCSprite projetil){
+
+	public void meteoroHit(CCSprite meteoro, CCSprite projetil) {
 		((Meteoro) meteoro).kabum();
 		((Projetil) projetil).kabum();
+		placar.aumentar();
 	}
-	
-	public void jogadorHit(CCSprite meteoro, CCSprite jogador){
-		
+
+	public void jogadorHit(CCSprite meteoro, CCSprite jogador) {
+		((Meteoro) meteoro).kabum();
+		((Jogador) jogador).kabum();
+		CCDirector.sharedDirector().replaceScene(new GameOver(placar).scene());
 	}
 
 	@Override
@@ -221,4 +274,41 @@ public class CenarioJogo extends CCLayer implements MotorMeteorosDelegate,
 		arrayProjeteis.remove(projetil);
 
 	}
+
+	//TODO: arrumar o pause
+	
+	@Override
+	public void suspender() {
+		SoundEngine.sharedEngine().setEffectsVolume(0f);
+		SoundEngine.sharedEngine().setSoundVolume(0f);
+
+		CCDirector.sharedDirector().replaceScene(new TelaInicial().scene());
+	}
+
+	@Override
+	public void continuar() {
+		if (Controlador.isPausado() || !Controlador.isJogando()) {
+			// Continua o jogo
+			this.pauseScreen = null;
+			Controlador.setPausado(false);
+			this.setIsTouchEnabled(true);
+		}
+
+	}
+
+	@Override
+	public void pausarEMostrarTela() {
+		if (Controlador.isJogando() && !Controlador.isPausado()) {
+			this.suspender();
+		}
+
+		else{
+			if(pauseScreen == null){
+				this.pauseScreen = new Pause();
+				this.layerTop.addChild(this.pauseScreen);
+				this.pauseScreen.setDelegate(this);
+			}
+		}
+	}
+
 }

@@ -7,9 +7,12 @@ import org.cocos2d.actions.interval.CCFadeOut;
 import org.cocos2d.actions.interval.CCScaleBy;
 import org.cocos2d.actions.interval.CCSequence;
 import org.cocos2d.actions.interval.CCSpawn;
+import org.cocos2d.nodes.CCDirector;
 import org.cocos2d.nodes.CCSprite;
+import org.cocos2d.sound.SoundEngine;
 import org.cocos2d.types.CGPoint;
 
+import br.edu.fema.spaceman.R;
 import br.edu.fema.spaceman.configuracao.Aparelho;
 import br.edu.fema.spaceman.delegate.MotorMeteorosDelegate;
 
@@ -60,6 +63,8 @@ public class Meteoro extends CCSprite{
 		CCSpawn s1 = CCSpawn.actions(a1, a2);
 		CCCallFunc c1 = CCCallFunc.action(this, "remover");
 		runAction(CCSequence.actions(s1, c1));
+		SoundEngine.sharedEngine().playEffect(
+				CCDirector.sharedDirector().getActivity(), R.raw.bang);
 	}
 	
 	public void parar(){
