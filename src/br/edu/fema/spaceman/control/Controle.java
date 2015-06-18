@@ -1,12 +1,15 @@
 package br.edu.fema.spaceman.control;
 
+import static br.edu.fema.spaceman.configuracao.Aparelho.screenHeight;
+import static br.edu.fema.spaceman.configuracao.Aparelho.screenResolution;
+import static br.edu.fema.spaceman.configuracao.Aparelho.screenWidth;
+
 import org.cocos2d.layers.CCLayer;
 import org.cocos2d.types.CGPoint;
 
 import br.edu.fema.spaceman.configuracao.Assets;
 import br.edu.fema.spaceman.delegate.ButtonDelegate;
 import br.edu.fema.spaceman.telas.CenarioJogo;
-import static br.edu.fema.spaceman.configuracao.Aparelho.*;
 
 public class Controle extends CCLayer implements ButtonDelegate {
 
@@ -32,6 +35,7 @@ public class Controle extends CCLayer implements ButtonDelegate {
 
 		// adiciona os botoes na tela
 		addChild(atirar);
+		addChild(pause);
 	}
 
 	public static Controle getControles() {
@@ -51,8 +55,9 @@ public class Controle extends CCLayer implements ButtonDelegate {
 	public void buttonClicked(Botao sender) {
 		if (sender.equals(atirar)) {
 			delegate.atirar();
-		} else {
-
+		}
+		else {
+			delegate.pausarEMostrarTela();	
 		}
 	}
 

@@ -12,7 +12,7 @@ public class Placar extends CCLayer {
 	
 	public Placar() {
 		placar = 0;
-		label = CCLabel.makeLabel("Pontos: "+placar.toString(), "ARCADE.ttf", 14);
+		label = CCLabel.makeLabel("Pontos: "+placar.toString(), "ARCADE.ttf", 20);
 		setPosition(screenWidth()-50, screenHeight()-50);
 		addChild(label);
 	}

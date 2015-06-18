@@ -16,26 +16,34 @@ import br.edu.fema.spaceman.delegate.ButtonDelegate;
 import br.edu.fema.spaceman.delegate.PauseDelegate;
 
 public class Pause extends CCLayer implements ButtonDelegate {
-	private Botao continuar;
-	private Botao sair;
-	private CCColorLayer background;
-	private PauseDelegate delegate;
+	private Botao continuar; // botao para jogar novamente
+	private Botao sair; // botao para sair para o menu principal
+	private CCColorLayer background; //Controla o fundo esmaecido da tela
+	private PauseDelegate delegate; //delegate do pause
 
 	public Pause() {
+		//Habilita o touch na tela
 		this.setIsTouchEnabled(true);
 		this.background = CCColorLayer.node(ccColor4B.ccc4(0, 0, 0, 175),
 				screenWidth(), screenHeight());
 		this.addChild(this.background);
+		
+		//Logo
 		CCSprite title = CCSprite.sprite(Assets.LOGO);
 		title.setPosition(screenResolution(CGPoint.ccp(screenWidth() / 2,
 				screenHeight() - 130)));
 		this.addChild(title);
-
+		
+		//Botao para jogar e botão para sair
 		this.continuar = new Botao(Assets.PLAY);
 		this.sair = new Botao(Assets.EXIT);
 		this.addChild(this.continuar);
 		this.addChild(this.sair);
+		
+		continuar.setDelegate(this);
+		sair.setDelegate(this);
 
+		//Posiciona os botoes
 		this.continuar.setPosition(screenResolution(CGPoint.ccp(
 				screenWidth() / 2, screenHeight() - 250)));
 		this.sair.setPosition(screenResolution(CGPoint.ccp(screenWidth() / 2,
@@ -44,13 +52,13 @@ public class Pause extends CCLayer implements ButtonDelegate {
 
 	@Override
 	public void buttonClicked(Botao sender) {
-		// Check Resume Button touched
+		// Checa se o botao tocado foi o continuar
 		if (sender == this.continuar) {
 			this.delegate.continuar();
 			this.removeFromParentAndCleanup(true);
 		}
 
-		// Check Quit Button touched
+		// Checa se o botao tocado foi o sair
 		if (sender == this.sair) {
 			this.delegate.suspender();
 

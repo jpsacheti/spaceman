@@ -1,15 +1,14 @@
 package br.edu.fema.spaceman.configuracao;
 
 public class Controlador {
-	private static boolean isPausado;
 	private static boolean isJogando;
 
 	public static boolean isPausado() {
-		return isPausado;
+		return !isJogando;
 	}
 
 	public static void setPausado(boolean isPausado) {
-		Controlador.isPausado = isPausado;
+		Controlador.isJogando = !isPausado;
 	}
 
 	public static boolean isJogando() {

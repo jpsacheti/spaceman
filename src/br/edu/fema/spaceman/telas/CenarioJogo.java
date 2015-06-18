@@ -143,6 +143,10 @@ public class CenarioJogo extends CCLayer implements MotorMeteorosDelegate,
 		super.onEnter();
 		schedule("verificarColisao");
 		schedule("removerElementos");
+		Controlador.setJogando(true);
+		Controlador.setPausado(false);
+		SoundEngine.sharedEngine().setEffectsVolume(1f);
+		SoundEngine.sharedEngine().setSoundVolume(1f);
 		ignicao();
 	}
 
@@ -243,14 +247,6 @@ public class CenarioJogo extends CCLayer implements MotorMeteorosDelegate,
 		return true;
 	}
 
-	public void moverDireita() {
-		jogador.moverDireita();
-	}
-
-	public void moverEsquerda() {
-		jogador.moverEsquerda();
-	}
-
 	public void meteoroHit(CCSprite meteoro, CCSprite projetil) {
 		((Meteoro) meteoro).kabum();
 		((Projetil) projetil).kabum();
@@ -275,8 +271,6 @@ public class CenarioJogo extends CCLayer implements MotorMeteorosDelegate,
 
 	}
 
-	//TODO: arrumar o pause
-	
 	@Override
 	public void suspender() {
 		SoundEngine.sharedEngine().setEffectsVolume(0f);
@@ -291,23 +285,29 @@ public class CenarioJogo extends CCLayer implements MotorMeteorosDelegate,
 			// Continua o jogo
 			this.pauseScreen = null;
 			Controlador.setPausado(false);
+			Controlador.setJogando(true);
 			this.setIsTouchEnabled(true);
+		}
+
+	}
+
+	public void pausarJogo() {
+		if (Controlador.isJogando()) {
+			Controlador.setPausado(true);
+		}
+
+		if (pauseScreen == null) {
+			this.pauseScreen = new Pause();
+			this.layerTop.addChild(this.pauseScreen);
+			this.pauseScreen.setDelegate(this);
 		}
 
 	}
 
 	@Override
 	public void pausarEMostrarTela() {
-		if (Controlador.isJogando() && !Controlador.isPausado()) {
-			this.suspender();
-		}
-
-		else{
-			if(pauseScreen == null){
-				this.pauseScreen = new Pause();
-				this.layerTop.addChild(this.pauseScreen);
-				this.pauseScreen.setDelegate(this);
-			}
+		if (Controlador.isJogando()) {
+			pausarJogo();
 		}
 	}
 

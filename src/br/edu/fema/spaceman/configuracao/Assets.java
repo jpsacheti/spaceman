@@ -10,12 +10,10 @@ public class Assets {
 	public final static String SOUND = "sound.png"; // Botão Musica
 	public final static String METEOR = "meteor.png"; // Meteoros 
 	public final static String SPACESHIP = "spaceship.png"; // Nave - jogador
-	public final static String LEFT = "left.png";
-	public final static String RIGHT = "right.png";
 	public final static String SHOOT = "shoot.png"; // Botão atirar
 	public final static String PROJECTILE = "projectile.png"; // Projétil - Disparo da nave
 	public final static String GAMEOVER = "gameover.png"; // Imagem de fim de jogo
-	public final static String PAUSE = "pause.png";
-	public final static String EXIT = "exit.png";
-	public final static String BTNPAUSE = "btnPause.png";
+	public final static String PAUSE = "pause.png"; // Imagem da tela de pause
+	public final static String EXIT = "sair.png"; // Sair
+	public final static String BTNPAUSE = "btnPause.png"; // Botão de pause
 }

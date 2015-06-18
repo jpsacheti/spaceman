@@ -14,47 +14,51 @@ import org.cocos2d.types.CGPoint;
 
 import br.edu.fema.spaceman.R;
 import br.edu.fema.spaceman.configuracao.Aparelho;
+import br.edu.fema.spaceman.configuracao.Controlador;
 import br.edu.fema.spaceman.delegate.MotorMeteorosDelegate;
 
-public class Meteoro extends CCSprite{
-	//Posição do meteoro na tela
-	private float x,y;
-	
+public class Meteoro extends CCSprite {
+	// Posição do meteoro na tela
+	private float x, y;
+
 	MotorMeteorosDelegate delegate;
-	
-	public Meteoro(String imagem){
-		//posiciona o meteoro com aletóriamente no cenário
+
+	public Meteoro(String imagem) {
+		// posiciona o meteoro com aletóriamente no cenário
 		super(imagem);
-		x = new Random(System.currentTimeMillis()).nextInt(Math.round(Aparelho.screenWidth()));
+		x = new Random(System.currentTimeMillis()).nextInt(Math.round(Aparelho
+				.screenWidth()));
 		y = Aparelho.screenHeight();
 	}
-	
-	//inicializa a Thread que atualiza a posição do meteoro
-	
-	public void iniciar(){
+
+	// inicializa a Thread que atualiza a posição do meteoro
+
+	public void iniciar() {
 		schedule("atualizar");
 	}
-	
-	//atualiza a posição do meteoro
-	public void atualizar(float dt){
+
+	// atualiza a posição do meteoro
+	public void atualizar(float dt) {
+		if (Controlador.isPausado())
+			return;
 		y--;
 		setPosition(Aparelho.screenResolution(CGPoint.ccp(x, y)));
 	}
-	
+
 	public void setDelegate(MotorMeteorosDelegate delegate) {
 		this.delegate = delegate;
 	}
-	
+
 	public float getX() {
 		return x;
 	}
-	
+
 	public float getY() {
 		return y;
 	}
-	
-	//Destroi o meteoro
-	public void kabum(){
+
+	// Destroi o meteoro
+	public void kabum() {
 		delegate.removerMeteoro(this);
 		unschedule("atualizar");
 		float dt = 0.2f;
@@ -66,12 +70,12 @@ public class Meteoro extends CCSprite{
 		SoundEngine.sharedEngine().playEffect(
 				CCDirector.sharedDirector().getActivity(), R.raw.bang);
 	}
-	
-	public void parar(){
+
+	public void parar() {
 		unschedule("atualizar");
 	}
-	
-	public void remover(){
+
+	public void remover() {
 		this.removeFromParentAndCleanup(true);
 	}
 
